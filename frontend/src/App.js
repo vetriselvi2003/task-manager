@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState("");
 
   const API_URL = "https://task-manager-2zo0.onrender.com/api/tasks";
 
@@ -51,6 +53,21 @@ function App() {
     }).then(() => getTasks());
   };
 
+  // Update task
+  const updateTask = (id) => {
+    fetch(`${API_URL}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ title: editText })
+    }).then(() => {
+      setEditId(null);
+      setEditText("");
+      getTasks();
+    });
+  };
+
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
       <h1 style={{ textAlign: "center" }}>Task Manager 🚀</h1>
@@ -66,41 +83,51 @@ function App() {
       </div>
 
       {tasks.map(task => (
-        <div
-          key={task._id}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "10px",
-            padding: "10px",
-            border: "1px solid #ddd",
-            borderRadius: "5px"
-          }}
-        >
-          <p
-            onClick={() => toggleTask(task)}
-            style={{
-              textDecoration: task.completed ? "line-through" : "none",
-              cursor: "pointer",
-              margin: 0
-            }}
-          >
-            {task.title}
-          </p>
+        <div key={task._id} style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+          padding: "10px",
+          border: "1px solid #ddd",
+          borderRadius: "5px"
+        }}>
+          
+          {editId === task._id ? (
+            <>
+              <input
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+              />
+              <button onClick={() => updateTask(task._id)}>Save</button>
+            </>
+          ) : (
+            <>
+              <p
+                onClick={() => toggleTask(task)}
+                style={{
+                  textDecoration: task.completed ? "line-through" : "none",
+                  cursor: "pointer",
+                  margin: 0
+                }}
+              >
+                {task.title}
+              </p>
 
-          <button
-            style={{
-              background: "red",
-              color: "white",
-              border: "none",
-              padding: "5px 10px",
-              cursor: "pointer"
-            }}
-            onClick={() => deleteTask(task._id)}
-          >
-            Delete
-          </button>
+              <div style={{ display: "flex", gap: "5px" }}>
+                <button onClick={() => {
+                  setEditId(task._id);
+                  setEditText(task.title);
+                }}>
+                  Edit
+                </button>
+
+                <button onClick={() => deleteTask(task._id)}>
+                  Delete
+                </button>
+              </div>
+            </>
+          )}
         </div>
       ))}
     </div>
