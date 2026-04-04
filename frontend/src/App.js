@@ -4,9 +4,11 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
 
+  const API_URL = "https://task-manager-2zo0.onrender.com/api/tasks";
+
   // Fetch tasks
   const getTasks = () => {
-    fetch("http://localhost:5000/api/tasks")
+    fetch(API_URL)
       .then(res => res.json())
       .then(data => setTasks(data));
   };
@@ -19,7 +21,7 @@ function App() {
   const addTask = () => {
     if (!title) return;
 
-    fetch("http://localhost:5000/api/tasks", {
+    fetch(API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -33,14 +35,14 @@ function App() {
 
   // Delete task
   const deleteTask = (id) => {
-    fetch(`http://localhost:5000/api/tasks/${id}`, {
+    fetch(`${API_URL}/${id}`, {
       method: "DELETE"
     }).then(() => getTasks());
   };
 
   // Toggle complete
   const toggleTask = (task) => {
-    fetch(`http://localhost:5000/api/tasks/${task._id}`, {
+    fetch(`${API_URL}/${task._id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -53,7 +55,6 @@ function App() {
     <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
       <h1 style={{ textAlign: "center" }}>Task Manager 🚀</h1>
 
-      {/* Input Section */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
         <input
           value={title}
@@ -64,7 +65,6 @@ function App() {
         <button onClick={addTask}>Add</button>
       </div>
 
-      {/* Task List */}
       {tasks.map(task => (
         <div
           key={task._id}
