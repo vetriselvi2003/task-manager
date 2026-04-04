@@ -4,7 +4,10 @@ const mongoose = require("mongoose");
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected ✅"))
-  .catch((err) => console.log(err));
+  .catch((err) => {
+  console.log("MongoDB ERROR ❌");
+  console.log(err.message);
+});
 const cors = require("cors");
 
 const app = express();
