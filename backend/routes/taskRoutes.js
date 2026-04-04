@@ -15,7 +15,6 @@ router.get("/", async (req, res) => {
   res.json(tasks);
 });
 
-module.exports = router;
 // Update task
 router.put("/:id", async (req, res) => {
   const updatedTask = await Task.findByIdAndUpdate(
@@ -25,8 +24,11 @@ router.put("/:id", async (req, res) => {
   );
   res.json(updatedTask);
 });
+
 // Delete task
 router.delete("/:id", async (req, res) => {
   await Task.findByIdAndDelete(req.params.id);
   res.json({ message: "Task deleted" });
 });
+
+module.exports = router;
