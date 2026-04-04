@@ -69,69 +69,91 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
-      <h1 style={{ textAlign: "center" }}>Task Manager 🚀</h1>
+  <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 flex items-center justify-center p-4">
+    
+    <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
+      
+      {/* Title */}
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        🚀 Task Manager
+      </h1>
 
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      {/* Input */}
+      <div className="flex gap-2 mb-5">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Enter task"
-          style={{ flex: 1, padding: "8px" }}
+          placeholder="Enter a task..."
+          className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
         />
-        <button onClick={addTask}>Add</button>
+        <button
+          onClick={addTask}
+          className="bg-indigo-500 text-white px-4 rounded-lg hover:bg-indigo-600 transition"
+        >
+          Add
+        </button>
       </div>
 
-      {tasks.map(task => (
-        <div key={task._id} style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "10px",
-          padding: "10px",
-          border: "1px solid #ddd",
-          borderRadius: "5px"
-        }}>
-          
-          {editId === task._id ? (
-            <>
-              <input
-                value={editText}
-                onChange={(e) => setEditText(e.target.value)}
-              />
-              <button onClick={() => updateTask(task._id)}>Save</button>
-            </>
-          ) : (
-            <>
-              <p
-                onClick={() => toggleTask(task)}
-                style={{
-                  textDecoration: task.completed ? "line-through" : "none",
-                  cursor: "pointer",
-                  margin: 0
-                }}
-              >
-                {task.title}
-              </p>
+      {/* Tasks */}
+      <div className="space-y-3">
+        {tasks.map(task => (
+          <div
+            key={task._id}
+            className="flex justify-between items-center bg-gray-50 p-3 rounded-lg shadow-sm hover:shadow-md transition"
+          >
 
-              <div style={{ display: "flex", gap: "5px" }}>
-                <button onClick={() => {
-                  setEditId(task._id);
-                  setEditText(task.title);
-                }}>
-                  Edit
+            {editId === task._id ? (
+              <>
+                <input
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  className="border p-1 rounded w-full mr-2"
+                />
+                <button
+                  onClick={() => updateTask(task._id)}
+                  className="bg-green-500 text-white px-3 rounded hover:bg-green-600"
+                >
+                  Save
                 </button>
+              </>
+            ) : (
+              <>
+                <p
+                  onClick={() => toggleTask(task)}
+                  className={`flex-1 cursor-pointer ${
+                    task.completed
+                      ? "line-through text-gray-400"
+                      : "text-gray-700"
+                  }`}
+                >
+                  {task.title}
+                </p>
 
-                <button onClick={() => deleteTask(task._id)}>
-                  Delete
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      ))}
+                <div className="flex gap-2 ml-2">
+                  <button
+                    onClick={() => {
+                      setEditId(task._id);
+                      setEditText(task.title);
+                    }}
+                    className="bg-yellow-400 px-2 rounded hover:bg-yellow-500"
+                  >
+                    ✏️
+                  </button>
+
+                  <button
+                    onClick={() => deleteTask(task._id)}
+                    className="bg-red-500 text-white px-2 rounded hover:bg-red-600"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  );
+  </div>
+);
 }
-
 export default App;
