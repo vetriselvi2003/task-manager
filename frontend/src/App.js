@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
   const [search, setSearch] = useState("");
@@ -10,16 +13,70 @@ function App() {
 
   const API_URL = "https://task-manager-2zo0.onrender.com/api/tasks";
 
+  // 🔐 LOGIN
+  const login = () => {
+    fetch("https://task-manager-2zo0.onrender.com/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          setToken(data.token);
+        } else {
+          alert(data.message || "Login failed");
+        }
+      });
+  };
+
+  // 🆕 REGISTER
+  const register = () => {
+    fetch("https://task-manager-2zo0.onrender.com/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || "User registered!");
+      });
+  };
+
+  // 🔓 LOGOUT
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken(null);
+  };
+
   // Fetch tasks
   const getTasks = () => {
-    fetch(API_URL)
+    fetch(API_URL, {
+      headers: {
+        Authorization: token
+      }
+    })
       .then(res => res.json())
       .then(data => setTasks(data));
   };
 
+  // eslint-disable-next-line
   useEffect(() => {
-    getTasks();
-  }, []);
+  if (token) {
+    fetch(API_URL, {
+      headers: {
+        Authorization: token
+      }
+    })
+      .then(res => res.json())
+      .then(data => setTasks(data));
+  }
+}, [token]);
 
   // Add task
   const addTask = () => {
@@ -28,9 +85,10 @@ function App() {
     fetch(API_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: token
       },
-      body: JSON.stringify({ title, dueDate }) // ✅ FIXED
+      body: JSON.stringify({ title, dueDate })
     }).then(() => {
       setTitle("");
       setDueDate("");
@@ -41,7 +99,10 @@ function App() {
   // Delete task
   const deleteTask = (id) => {
     fetch(`${API_URL}/${id}`, {
-      method: "DELETE"
+      method: "DELETE",
+      headers: {
+        Authorization: token
+      }
     }).then(() => getTasks());
   };
 
@@ -50,7 +111,8 @@ function App() {
     fetch(`${API_URL}/${task._id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: token
       },
       body: JSON.stringify({ completed: !task.completed })
     }).then(() => getTasks());
@@ -61,7 +123,8 @@ function App() {
     fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        Authorization: token
       },
       body: JSON.stringify({ title: editText })
     }).then(() => {
@@ -71,14 +134,62 @@ function App() {
     });
   };
 
+  // 🔐 LOGIN SCREEN
+  if (!token) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-4 bg-gradient-to-br from-blue-200 to-purple-200">
+        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-3 w-80">
+          <h2 className="text-2xl font-bold text-center">Login 🔐</h2>
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="p-2 border rounded"
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="p-2 border rounded"
+          />
+
+          <button
+            onClick={login}
+            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+          >
+            Login
+          </button>
+
+          <button
+            onClick={register}
+            className="bg-green-500 text-white py-2 rounded hover:bg-green-600"
+          >
+            Register
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 🧠 MAIN APP
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-200 via-purple-200 to-pink-200 flex items-center justify-center p-4">
-      
       <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
         
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">
           🚀 Task Manager
         </h1>
+
+        <button
+          onClick={logout}
+          className="bg-gray-500 text-white px-3 py-1 rounded mb-4"
+        >
+          Logout
+        </button>
 
         {/* Add Task */}
         <div className="flex gap-2 mb-3">
@@ -101,7 +212,7 @@ function App() {
           type="date"
           value={dueDate}
           onChange={(e) => setDueDate(e.target.value)}
-          className="w-full mb-4 p-2 border rounded-lg"
+          className="w-full mb-3 p-2 border rounded-lg"
         />
 
         {/* Search */}
@@ -152,7 +263,6 @@ function App() {
                         {task.title}
                       </p>
 
-                      {/* ✅ SHOW DUE DATE */}
                       <p className="text-xs text-gray-400">
                         {task.dueDate
                           ? new Date(task.dueDate).toLocaleDateString()
