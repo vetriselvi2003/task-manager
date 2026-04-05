@@ -10,6 +10,8 @@ function App() {
   const [editText, setEditText] = useState("");
   const [search, setSearch] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [error, setError] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
 
   const API_URL = "https://task-manager-2zo0.onrender.com/api/tasks";
 
@@ -27,8 +29,9 @@ function App() {
         if (data.token) {
           localStorage.setItem("token", data.token);
           setToken(data.token);
+          setError("");
         } else {
-          alert(data.message || "Login failed");
+          setError(data.message || "Login failed");
         }
       });
   };
@@ -44,7 +47,7 @@ function App() {
     })
       .then(res => res.json())
       .then(data => {
-        alert(data.message || "User registered!");
+        setError(data.message || "User registered!");
       });
   };
 
@@ -65,18 +68,9 @@ function App() {
       .then(data => setTasks(data));
   };
 
-  // eslint-disable-next-line
   useEffect(() => {
-  if (token) {
-    fetch(API_URL, {
-      headers: {
-        Authorization: token
-      }
-    })
-      .then(res => res.json())
-      .then(data => setTasks(data));
-  }
-}, [token]);
+    if (token) getTasks();
+  }, [token]);
 
   // Add task
   const addTask = () => {
@@ -134,12 +128,15 @@ function App() {
     });
   };
 
-  // 🔐 LOGIN SCREEN
+  // 🔐 LOGIN / REGISTER SCREEN
   if (!token) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4 bg-gradient-to-br from-blue-200 to-purple-200">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-200 to-purple-200">
         <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col gap-3 w-80">
-          <h2 className="text-2xl font-bold text-center">Login 🔐</h2>
+          
+          <h2 className="text-xl font-bold text-center">
+            {isLogin ? "Login 🔐" : "Register 🆕"}
+          </h2>
 
           <input
             type="email"
@@ -157,19 +154,29 @@ function App() {
             className="p-2 border rounded"
           />
 
-          <button
-            onClick={login}
-            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-          >
-            Login
-          </button>
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
 
           <button
-            onClick={register}
-            className="bg-green-500 text-white py-2 rounded hover:bg-green-600"
+            onClick={isLogin ? login : register}
+            className="bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
           >
-            Register
+            {isLogin ? "Login" : "Register"}
           </button>
+
+          <p
+            className="text-sm text-center cursor-pointer text-blue-500"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError("");
+            }}
+          >
+            {isLogin
+              ? "Don't have an account? Register"
+              : "Already have an account? Login"}
+          </p>
+
         </div>
       </div>
     );
@@ -293,6 +300,7 @@ function App() {
               </div>
             ))}
         </div>
+
       </div>
     </div>
   );
